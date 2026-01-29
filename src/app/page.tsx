@@ -8,8 +8,12 @@ import Image from 'next/image';
 
 export default function Home() {
     const [view, setView] = useState<'login' | 'student-dashboard' | 'teacher-dashboard'>('login');
+    const [loginStep, setLoginStep] = useState<'role' | 'select' | 'password'>('role');
     const [loginRole, setLoginRole] = useState<'student' | 'teacher' | null>(null);
+    const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [tempUser, setTempUser] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [students, setStudents] = useState<any[]>([]);
     const [teachers, setTeachers] = useState<any[]>([]);
@@ -79,6 +83,29 @@ export default function Home() {
         }
     };
 
+    const handleLogin = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setLoginError('');
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: tempUser._id, password, role: loginRole })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+                setView(loginRole === 'student' ? 'student-dashboard' : 'teacher-dashboard');
+            } else {
+                const data = await res.json();
+                setLoginError(data.error || 'Login fehlgeschlagen');
+            }
+        } catch (e) {
+            setLoginError('Serververbindung fehlgeschlagen');
+        }
+    };
+
     if (loading) return (
         <div className="flex flex-col h-screen items-center justify-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -101,10 +128,10 @@ export default function Home() {
                             <p className="text-slate-500 mt-2 italic">Bitte wähle deinen Zugang</p>
                         </div>
 
-                        {!loginRole ? (
+                        {loginStep === 'role' && (
                             <div className="grid grid-cols-1 gap-4">
                                 <button
-                                    onClick={() => setLoginRole('student')}
+                                    onClick={() => { setLoginRole('student'); setLoginStep('select'); }}
                                     className="white-card p-6 flex flex-col items-center space-y-4 hover:border-pink-500 transition-all group"
                                 >
                                     <div className="p-4 bg-pink-50 rounded-full group-hover:bg-pink-100 transition-colors">
@@ -117,7 +144,7 @@ export default function Home() {
                                 </button>
 
                                 <button
-                                    onClick={() => setLoginRole('teacher')}
+                                    onClick={() => { setLoginRole('teacher'); setLoginStep('select'); }}
                                     className="white-card p-6 flex flex-col items-center space-y-4 hover:border-blue-500 transition-all group"
                                 >
                                     <div className="p-4 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
@@ -129,13 +156,15 @@ export default function Home() {
                                     </div>
                                 </button>
                             </div>
-                        ) : (
+                        )}
+
+                        {loginStep === 'select' && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="white-card p-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="font-bold text-xl text-slate-800">
-                                        {loginRole === 'student' ? 'Schüler Login' : 'Lehrer Login'}
+                                        {loginRole === 'student' ? 'Schüler wählen' : 'Lehrer wählen'}
                                     </h2>
-                                    <button onClick={() => { setLoginRole(null); setSearchTerm(''); }} className="text-slate-400 hover:text-slate-600">
+                                    <button onClick={() => { setLoginStep('role'); setLoginRole(null); setSearchTerm(''); }} className="text-slate-400 hover:text-slate-600">
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -146,7 +175,7 @@ export default function Home() {
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Dein Name suchen..."
+                                        placeholder="Namenssuche..."
                                         className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -159,8 +188,10 @@ export default function Home() {
                                                 <button
                                                     key={item._id}
                                                     onClick={() => {
-                                                        setUser(item);
-                                                        setView(loginRole === 'student' ? 'student-dashboard' : 'teacher-dashboard');
+                                                        setTempUser(item);
+                                                        setLoginStep('password');
+                                                        setPassword('');
+                                                        setLoginError('');
                                                     }}
                                                     className="w-full text-left px-4 py-3 hover:bg-pink-50 border-b border-slate-50 last:border-0 flex justify-between items-center transition-colors"
                                                 >
@@ -169,13 +200,48 @@ export default function Home() {
                                                 </button>
                                             ))}
                                         </div>
+                                    ) : (students.length === 0 && teachers.length === 0) ? (
+                                        <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                            <p className="text-sm text-amber-700 font-medium text-center">
+                                                Datenbank leer. Bitte <code className="bg-amber-100 px-1 rounded">/api/seed</code> aufrufen!
+                                            </p>
+                                        </div>
                                     ) : searchTerm.length > 2 && (
-                                        <p className="text-sm text-red-500 mt-4 text-center">Name nicht in der Liste gefunden.</p>
+                                        <p className="text-sm text-red-500 mt-4 text-center">Name nicht gefunden.</p>
                                     )}
                                 </div>
-                                <p className="mt-6 text-xs text-slate-400 leading-relaxed">
-                                    Hinweis: Falls dein Name fehlt, wende dich bitte an das Sekretariat.
-                                </p>
+                            </motion.div>
+                        )}
+
+                        {loginStep === 'password' && (
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="white-card p-8 text-center">
+                                <div className="mb-6 flex flex-col items-center">
+                                    <div className="w-16 h-16 bg-pink-50 text-pink-600 rounded-full flex items-center justify-center mb-4">
+                                        <Users className="w-8 h-8" />
+                                    </div>
+                                    <h1 className="text-2xl font-bold text-slate-800">{tempUser.name}</h1>
+                                    <p className="text-slate-500 text-sm">Bitte gib dein Passwort ein</p>
+                                </div>
+
+                                <form onSubmit={handleLogin} className="space-y-4">
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Dein Passwort"
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        autoFocus
+                                    />
+                                    {loginError && <p className="text-sm text-red-500">{loginError}</p>}
+                                    <button type="submit" className="w-full btn-primary py-3">Einloggen</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoginStep('select')}
+                                        className="text-slate-400 text-sm hover:text-slate-600 block mx-auto underline"
+                                    >
+                                        Zurück zur Auswahl
+                                    </button>
+                                </form>
                             </motion.div>
                         )}
                     </motion.div>
@@ -189,7 +255,13 @@ export default function Home() {
                                 <p className="text-slate-500">Klasse {user.className} • <span className="text-pink-600 font-semibold">Aktive Einwahl</span></p>
                             </div>
                             <button
-                                onClick={() => { setView('login'); setUser(null); setLoginRole(null); setSearchTerm(''); }}
+                                onClick={() => {
+                                    setView('login');
+                                    setUser(null);
+                                    setLoginRole(null);
+                                    setSearchTerm('');
+                                    setLoginStep('role');
+                                }}
                                 className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all"
                             >
                                 Abmelden
@@ -273,7 +345,13 @@ export default function Home() {
                                 <p className="text-slate-500 font-medium">{user.name} <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">{user.role}</span></p>
                             </div>
                             <button
-                                onClick={() => { setView('login'); setUser(null); setLoginRole(null); setSearchTerm(''); }}
+                                onClick={() => {
+                                    setView('login');
+                                    setUser(null);
+                                    setLoginRole(null);
+                                    setSearchTerm('');
+                                    setLoginStep('role');
+                                }}
                                 className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all"
                             >
                                 Abmelden
