@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+// Sync Trigger: 2026-01-29 17:12
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
