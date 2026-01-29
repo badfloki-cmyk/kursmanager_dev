@@ -13,14 +13,18 @@ export async function POST(req: Request) {
         const Model = role === 'student' ? Student : Teacher;
         const user = await Model.findById(id);
 
-        if (!user || !user.password) {
-            return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
+        if (!user) {
+            return NextResponse.json({ error: 'Benutzer existiert nicht mehr. Bitte Seite neu laden!' }, { status: 404 });
+        }
+
+        if (!user.password) {
+            return NextResponse.json({ error: 'Benutzer hat kein Passwort gesetzt. Bitte Administrator kontaktieren (/api/seed aufrufen).' }, { status: 400 });
         }
 
         const isValid = await bcrypt.compare(password, user.password);
 
         if (!isValid) {
-            return NextResponse.json({ error: 'Passwort falsch' }, { status: 401 });
+            return NextResponse.json({ error: 'Passwort ist nicht korrekt. Bitte auf Groß-/Kleinschreibung achten.' }, { status: 401 });
         }
 
         return NextResponse.json({ success: true, user });

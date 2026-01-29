@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 // Force sync trigger 2026-01-29
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check } from 'lucide-react';
+import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Home() {
@@ -22,6 +22,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -252,15 +253,32 @@ export default function Home() {
                                 </div>
 
                                 <form onSubmit={handleLogin} className="space-y-4">
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Dein Passwort"
-                                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-                                        autoFocus
-                                    />
-                                    {loginError && <p className="text-sm text-red-500">{loginError}</p>}
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Dein Passwort"
+                                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 pr-10"
+                                            autoFocus
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-5 h-5" />
+                                            ) : (
+                                                <Eye className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    {loginError && (
+                                        <p className="text-sm text-red-500 font-bold bg-red-50 p-2 rounded border border-red-100 italic">
+                                            {loginError}
+                                        </p>
+                                    )}
                                     <button type="submit" className="w-full btn-primary py-3">Einloggen</button>
                                     <button
                                         type="button"
