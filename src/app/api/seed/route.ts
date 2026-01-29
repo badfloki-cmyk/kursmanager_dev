@@ -14,21 +14,39 @@ export async function GET() {
         await Student.deleteMany({});
         await Teacher.deleteMany({});
 
-        // Hash passwords and seed
-        const hashedStudents = await Promise.all(studentsData.map(async (s) => ({
-            ...s,
-            password: await bcrypt.hash(s.password, 10)
-        })));
+        const studentCredentials: any[] = [];
+        const teacherCredentials: any[] = [];
 
-        const hashedTeachers = await Promise.all(teachersData.map(async (t) => ({
-            ...t,
-            password: await bcrypt.hash(t.password, 10)
-        })));
+        // Hash passwords and seed students
+        const hashedStudents = await Promise.all(studentsData.map(async (s) => {
+            const pin = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit PIN
+            studentCredentials.push({ name: s.name, className: s.className, pin });
+            return {
+                ...s,
+                password: await bcrypt.hash(pin, 10)
+            };
+        }));
+
+        // Hash passwords and seed teachers
+        const hashedTeachers = await Promise.all(teachersData.map(async (t) => {
+            const pin = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digit PIN for teachers
+            teacherCredentials.push({ name: t.name, pin });
+            return {
+                ...t,
+                password: await bcrypt.hash(pin, 10)
+            };
+        }));
 
         await Student.insertMany(hashedStudents);
         await Teacher.insertMany(hashedTeachers);
 
-        return NextResponse.json({ message: 'Database seeded successfully with passwords' });
+        return NextResponse.json({
+            message: 'Database seeded successfully with dynamic PINs',
+            credentials: {
+                students: studentCredentials,
+                teachers: teacherCredentials
+            }
+        });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
