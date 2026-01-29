@@ -121,6 +121,16 @@ export default function Home() {
         }
     };
 
+    const removeBooking = async (id: string) => {
+        if (!confirm('Diesen Schüler wirklich aus dem Kurs entfernen?')) return;
+        try {
+            const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchData();
+        } catch (e) {
+            alert('Fehler beim Entfernen');
+        }
+    };
+
     const handleLogin = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setLoginError('');
@@ -516,6 +526,7 @@ export default function Home() {
                                                                             <tr>
                                                                                 <th className="px-3 py-2">Name</th>
                                                                                 <th className="px-3 py-2">Klasse</th>
+                                                                                <th className="px-3 py-2 text-right">Aktion</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody className="divide-y divide-slate-100">
@@ -523,6 +534,15 @@ export default function Home() {
                                                                                 <tr key={i} className="hover:bg-white/50 transition-colors">
                                                                                     <td className="px-3 py-2 font-medium text-slate-700">{b.student?.name}</td>
                                                                                     <td className="px-3 py-2 text-slate-500">{b.student?.className}</td>
+                                                                                    <td className="px-3 py-2 text-right">
+                                                                                        <button
+                                                                                            onClick={() => removeBooking(b._id)}
+                                                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                                                            title="Entfernen"
+                                                                                        >
+                                                                                            <X className="w-4 h-4" />
+                                                                                        </button>
+                                                                                    </td>
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
