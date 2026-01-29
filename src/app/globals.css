@@ -2,43 +2,43 @@
 
 :root {
   --primary: #e4005e;
-  --secondary: #000000;
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
 }
 
 body {
-  background: var(--bg-gradient);
-  color: white;
+  background-color: var(--bg-main);
+  color: var(--text-main);
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
 }
 
-.glass-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
+.white-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .btn-primary {
   background: var(--primary);
   color: white;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px 0 rgba(228, 0, 94, 0.39);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(228, 0, 94, 0.45);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #ffffff, #e4005e);
+  background: linear-gradient(to right, #1e293b, #e4005e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
