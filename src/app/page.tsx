@@ -24,7 +24,7 @@ export default function Home() {
     const [editingContent, setEditingContent] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isBooking, setIsBooking] = useState(false);
-    const [settings, setSettings] = useState({ resetDay1: 1, resetDay2: 4 });
+    const [settings, setSettings] = useState({ resetDay1: 1, resetDay2: 4, resetTime: "00:00" });
     const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
     useEffect(() => {
@@ -496,9 +496,9 @@ export default function Home() {
                                             <p className="text-amber-800 text-xs mt-1 leading-relaxed">
                                                 Die Kurs-Einschreibungen werden automatisch archiviert und die Plätze freigegeben:
                                                 <br />
-                                                • Immer am <strong>{getDayName(settings.resetDay1)} um 00:00 Uhr</strong>
+                                                • Immer am <strong>{getDayName(settings.resetDay1)} um {settings.resetTime} Uhr</strong>
                                                 <br />
-                                                • Immer am <strong>{getDayName(settings.resetDay2)} um 00:00 Uhr</strong>
+                                                • Immer am <strong>{getDayName(settings.resetDay2)} um {settings.resetTime} Uhr</strong>
                                             </p>
                                         </div>
                                     </div>
@@ -613,9 +613,9 @@ export default function Home() {
 
                                     <div className="p-4 bg-slate-50 border-t border-slate-100">
                                         <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                            <Clock className="w-4 h-4" /> Reset-Tage festlegen
+                                            <Clock className="w-4 h-4" /> Reset-Zeitpunkt festlegen
                                         </h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-3 gap-4">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase">Tag 1</label>
                                                 <select
@@ -641,6 +641,16 @@ export default function Home() {
                                                         <option key={d} value={d}>{getDayName(d)}</option>
                                                     ))}
                                                 </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Uhrzeit</label>
+                                                <input
+                                                    type="time"
+                                                    value={settings.resetTime}
+                                                    disabled={isUpdatingSettings}
+                                                    onChange={(e) => updateSettings({ ...settings, resetTime: e.target.value })}
+                                                    className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
+                                                />
                                             </div>
                                         </div>
                                         {isUpdatingSettings && <p className="text-[10px] text-pink-600 font-bold mt-2 animate-pulse">Speichere Änderungen...</p>}
