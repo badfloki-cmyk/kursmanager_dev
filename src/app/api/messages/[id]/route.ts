@@ -3,11 +3,12 @@ export const dynamic = 'force-dynamic';
 import dbConnect from '@/lib/db';
 import Message from '@/models/Message';
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
+        const { id } = await params;
         const { content } = await req.json();
-        const message = await Message.findByIdAndUpdate(params.id, { content }, { new: true });
+        const message = await Message.findByIdAndUpdate(id, { content }, { new: true });
         if (!message) return NextResponse.json({ error: 'Nachricht nicht gefunden' }, { status: 404 });
         return NextResponse.json(message);
     } catch (error: any) {
@@ -15,10 +16,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
-        const message = await Message.findByIdAndDelete(params.id);
+        const { id } = await params;
+        const message = await Message.findByIdAndDelete(id);
         if (!message) return NextResponse.json({ error: 'Nachricht nicht gefunden' }, { status: 404 });
         return NextResponse.json({ message: 'Nachricht gelöscht' });
     } catch (error: any) {
