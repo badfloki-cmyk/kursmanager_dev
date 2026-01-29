@@ -7,7 +7,7 @@ import { getCurrentSession } from '@/lib/session';
 export async function GET() {
     try {
         await dbConnect();
-        const session = getCurrentSession();
+        const session = await getCurrentSession();
         const bookings = await Booking.find({ session }).populate('student');
         return NextResponse.json(bookings);
     } catch (error: any) {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     try {
         await dbConnect();
         const { studentId, room } = await req.json();
-        const session = getCurrentSession();
+        const session = await getCurrentSession();
 
         // Check capacity
         const count = await Booking.countDocuments({ room, session });
