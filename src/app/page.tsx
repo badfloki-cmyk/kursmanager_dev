@@ -456,7 +456,7 @@ export default function Home() {
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-slate-600 text-sm italic">"{m.content}"</p>
+                                                                <p className="text-slate-600 text-sm italic">&quot;{m.content}&quot;</p>
                                                             </>
                                                         )}
                                                     </div>
