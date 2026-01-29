@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 // Force sync trigger 2026-01-29
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check, Eye, EyeOff } from 'lucide-react';
+import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check, Eye, EyeOff, Clock } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Home() {
@@ -456,6 +456,21 @@ export default function Home() {
                             <div className="white-card">
                                 <div className="bg-slate-50 p-4 border-b border-slate-100 font-bold text-slate-800 flex justify-between items-center">
                                     <span>Verwaltung & Berichte</span>
+                                </div>
+                                <div className="p-4 bg-amber-50/50 border-b border-amber-100">
+                                    <div className="flex items-start gap-3">
+                                        <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <h4 className="font-bold text-amber-900 text-sm">Automatischer Listen-Reset</h4>
+                                            <p className="text-amber-800 text-xs mt-1 leading-relaxed">
+                                                Die Kurs-Einschreibungen werden automatisch archiviert und die Plätze freigegeben:
+                                                <br />
+                                                • Immer am <strong>Montag um 00:00 Uhr</strong>
+                                                <br />
+                                                • Immer am <strong>Donnerstag um 00:00 Uhr</strong>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="p-0">
                                     <div className="border-b border-slate-100 p-4 bg-slate-50/50">
