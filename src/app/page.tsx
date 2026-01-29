@@ -55,7 +55,13 @@ export default function Home() {
 
             const resSettings = await fetch('/api/settings');
             const dataSet = await resSettings.json();
-            if (dataSet && !dataSet.error) setSettings(dataSet);
+            if (dataSet && !dataSet.error) {
+                setSettings({
+                    resetDay1: dataSet.resetDay1 ?? 1,
+                    resetDay2: dataSet.resetDay2 ?? 4,
+                    resetTime: dataSet.resetTime || "00:00"
+                });
+            }
         } catch (e) {
             console.error(e);
         } finally {
