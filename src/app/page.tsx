@@ -36,10 +36,19 @@ export default function Home() {
                 fetch('/api/bookings'),
                 fetch('/api/messages')
             ]);
-            setStudents(await resS.json());
-            setTeachers(await resT.json());
-            setBookings(await resB.json());
-            setMessages(await resM.json());
+
+            const [dataS, dataT, dataB, dataM] = await Promise.all([
+                resS.json(), resT.json(), resB.json(), resM.json()
+            ]);
+
+            setStudents(Array.isArray(dataS) ? dataS : []);
+            setTeachers(Array.isArray(dataT) ? dataT : []);
+            setBookings(Array.isArray(dataB) ? dataB : []);
+            setMessages(Array.isArray(dataM) ? dataM : []);
+
+            if (dataB.error || dataM.error || dataS.error || dataT.error) {
+                console.error("API Error detected:", dataB.error || dataM.error || dataS.error || dataT.error);
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -49,9 +58,9 @@ export default function Home() {
 
     const filteredItems = useMemo(() => {
         const list = loginRole === 'student' ? students : teachers;
-        if (!searchTerm) return [];
+        if (!searchTerm || !Array.isArray(list)) return [];
         return list.filter(item =>
-            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())
         ).slice(0, 10);
     }, [searchTerm, loginRole, students, teachers]);
 
@@ -316,10 +325,8 @@ export default function Home() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {['Mathe', 'Deutsch', 'Englisch'].map(room => {
-                                const roomBookings = bookings.filter((b: any) => b.room === room);
-                                const count = roomBookings.length;
-                                const isBooked = bookings.find((b: any) => b.student?._id === user._id && b.room === room);
-
+                                const count = Array.isArray(bookings) ? bookings.filter((b: any) => b.room === room).length : 0;
+                                const isBooked = Array.isArray(bookings) && user ? bookings.some((b: any) => b.student?._id === user._id && b.room === room) : false;
                                 return (
                                     <div key={room} className={`white-card p-6 flex flex-col justify-between h-full transition-all ${isBooked ? 'ring-2 ring-emerald-500 ring-offset-4' : ''}`}>
                                         <div>
@@ -361,7 +368,7 @@ export default function Home() {
                                 <h3 className="font-bold text-slate-800">Schwarzes Brett (Lehrer-Infos)</h3>
                             </div>
                             <div className="p-6">
-                                {messages.length === 0 ? (
+                                {!Array.isArray(messages) || messages.length === 0 ? (
                                     <p className="text-slate-400 italic text-center py-4">Derzeit keine neuen Mitteilungen.</p>
                                 ) : (
                                     <div className="space-y-4">
@@ -435,7 +442,7 @@ export default function Home() {
                                     <div className="border-b border-slate-100 p-4 bg-slate-50/50">
                                         <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider">Aktuelle Mitteilungen</h4>
                                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                            {messages.length === 0 ? (
+                                            {!Array.isArray(messages) || messages.length === 0 ? (
                                                 <p className="text-slate-400 italic text-sm text-center py-4">Noch keine Nachrichten veröffentlicht.</p>
                                             ) : (
                                                 messages.map((m) => (
@@ -487,7 +494,7 @@ export default function Home() {
                                         <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider">Kurs-Listen</h4>
                                         <div className="divide-y divide-slate-100">
                                             {['Mathe', 'Deutsch', 'Englisch'].map(room => {
-                                                const roomBookings = bookings.filter((b: any) => b.room === room);
+                                                const roomBookings = Array.isArray(bookings) ? bookings.filter((b: any) => b.room === room) : [];
                                                 return (
                                                     <details key={room} className="group overflow-hidden">
                                                         <summary className="p-4 cursor-pointer list-none flex justify-between items-center hover:bg-slate-50 transition-colors rounded-lg">
