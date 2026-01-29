@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+// Force sync trigger 2026-01-29
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check } from 'lucide-react';
 import Image from 'next/image';
@@ -223,8 +224,8 @@ export default function Home() {
                                             disabled={count >= 25 && !isBooked}
                                             onClick={() => handleBooking(room)}
                                             className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${isBooked
-                                                    ? 'bg-emerald-500 text-white cursor-default shadow-lg shadow-emerald-200'
-                                                    : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                                                ? 'bg-emerald-500 text-white cursor-default shadow-lg shadow-emerald-200'
+                                                : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
                                                 }`}
                                         >
                                             {isBooked ? (
