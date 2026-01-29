@@ -177,7 +177,7 @@ export default function Home() {
                         className="max-w-md mx-auto py-12"
                     >
                         <div className="text-center mb-10">
-                            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Kursmanager</h1>
+                            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Fit für den Abschluss</h1>
                             <p className="text-slate-500 mt-2 italic">Bitte wähle deinen Zugang</p>
                         </div>
 
@@ -191,7 +191,7 @@ export default function Home() {
                                         <Users className="w-8 h-8 text-pink-600" />
                                     </div>
                                     <div className="text-center">
-                                        <span className="block text-xl font-bold text-slate-800">Ich bin Schüler</span>
+                                        <span className="block text-xl font-bold text-slate-800">Ich bin Schüler*in</span>
                                         <span className="text-sm text-slate-400">Einwahl in Kurse</span>
                                     </div>
                                 </button>
@@ -204,7 +204,7 @@ export default function Home() {
                                         <GraduationCap className="w-8 h-8 text-blue-600" />
                                     </div>
                                     <div className="text-center">
-                                        <span className="block text-xl font-bold text-slate-800">Ich bin Lehrer</span>
+                                        <span className="block text-xl font-bold text-slate-800">Ich bin Lehrer*in</span>
                                         <span className="text-sm text-slate-400">Verwaltung & Infos</span>
                                     </div>
                                 </button>
@@ -215,7 +215,7 @@ export default function Home() {
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="white-card p-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="font-bold text-xl text-slate-800">
-                                        {loginRole === 'student' ? 'Schüler wählen' : 'Lehrer wählen'}
+                                        {loginRole === 'student' ? 'Schüler*in wählen' : 'Lehrer*in wählen'}
                                     </h2>
                                     <button onClick={() => { setLoginStep('role'); setLoginRole(null); setSearchTerm(''); }} className="text-slate-400 hover:text-slate-600">
                                         <X className="w-5 h-5" />
@@ -384,7 +384,7 @@ export default function Home() {
                         <div className="white-card overflow-hidden">
                             <div className="bg-slate-50 p-4 border-b border-slate-100 flex items-center gap-2">
                                 <MessageSquare className="w-5 h-5 text-blue-500" />
-                                <h3 className="font-bold text-slate-800">Schwarzes Brett (Lehrer-Infos)</h3>
+                                <h3 className="font-bold text-slate-800">Schwarzes Brett (Infos für Schüler*innen)</h3>
                             </div>
                             <div className="p-6">
                                 {!Array.isArray(messages) || messages.length === 0 ? (
@@ -413,7 +413,7 @@ export default function Home() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 py-8">
                         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-tight">Lehrer-Zentrale</h1>
+                                <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-tight">Lehrer*innen-Zentrale</h1>
                                 <p className="text-slate-500 font-medium">{user.name} <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">{user.role}</span></p>
                             </div>
                             <button
@@ -445,7 +445,7 @@ export default function Home() {
                                         <textarea
                                             name="msg"
                                             required
-                                            placeholder="Deine Nachricht an alle Schüler..."
+                                            placeholder="Deine Nachricht an alle Schüler*innen..."
                                             className="w-full flex-1 min-h-[160px] bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white transition-all resize-none"
                                         />
                                         <button type="submit" className="btn-primary w-full py-4 text-lg">Mitteilung veröffentlichen</button>

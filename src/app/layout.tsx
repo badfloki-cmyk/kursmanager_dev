@@ -7,8 +7,8 @@ import Image from "next/image";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "KGS Pattensen - Kursmanager",
-    description: "Einbuchungssystem für Schüler der KGS Pattensen",
+    title: "KGS Pattensen - Fit für den Abschluss",
+    description: "Einbuchungssystem für Schüler*innen der KGS Pattensen",
 };
 
 export default function RootLayout({
@@ -30,7 +30,7 @@ export default function RootLayout({
                                 className="h-10 w-auto"
                             />
                             <span className="hidden md:block font-bold text-gray-400">|</span>
-                            <span className="hidden md:block font-semibold text-gray-500">Kursmanager</span>
+                            <span className="hidden md:block font-semibold text-gray-500">Fit für den Abschluss</span>
                         </div>
                         <div className="text-sm font-medium text-gray-400">
                             Schuljahr 2025/26
