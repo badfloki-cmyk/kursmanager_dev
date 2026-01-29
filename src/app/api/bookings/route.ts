@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import dbConnect from '@/lib/db';
 import Booking from '@/models/Booking';
 import { getCurrentSession } from '@/lib/session';
