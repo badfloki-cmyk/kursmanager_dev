@@ -11,10 +11,10 @@ async function dbConnect() {
         return cached.conn;
     }
 
-    const MONGODB_URI = process.env.MONGODB_URI;
+    const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
 
     if (!MONGODB_URI) {
-        throw new Error('Please define the MONGODB_URI environment variable inside .env.local or Vercel Settings');
+        throw new Error('Please define the MONGODB_URI or DATABASE_URL environment variable inside .env.local or Vercel Settings');
     }
 
     if (!cached.promise) {
