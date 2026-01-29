@@ -23,6 +23,7 @@ export default function Home() {
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isBooking, setIsBooking] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -65,6 +66,8 @@ export default function Home() {
     }, [searchTerm, loginRole, students, teachers]);
 
     const handleBooking = async (room: string) => {
+        if (isBooking) return;
+        setIsBooking(true);
         try {
             const res = await fetch('/api/bookings', {
                 method: 'POST',
@@ -72,13 +75,15 @@ export default function Home() {
                 body: JSON.stringify({ studentId: user._id, room })
             });
             if (res.ok) {
-                fetchData();
+                await fetchData();
             } else {
                 const d = await res.json();
                 alert(d.error);
             }
         } catch (e) {
             alert('Fehler beim Buchen');
+        } finally {
+            setIsBooking(false);
         }
     };
 
@@ -356,14 +361,18 @@ export default function Home() {
                                         </div>
 
                                         <button
-                                            disabled={count >= 25 && !isBooked}
+                                            disabled={(count >= 25 && !isBooked) || isBooking}
                                             onClick={() => handleBooking(room)}
                                             className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${isBooked
                                                 ? 'bg-emerald-500 text-white cursor-default shadow-lg shadow-emerald-200'
-                                                : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                                                : (count >= 25 || isBooking)
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
                                                 }`}
                                         >
-                                            {isBooked ? (
+                                            {isBooking ? (
+                                                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Reserviere...</>
+                                            ) : isBooked ? (
                                                 <><Check className="w-6 h-6" /> Eingetragen</>
                                             ) : count >= 25 ? 'Raum Voll' : 'Platz reservieren'}
                                         </button>
