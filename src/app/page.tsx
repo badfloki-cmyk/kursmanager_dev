@@ -24,6 +24,8 @@ export default function Home() {
     const [editingContent, setEditingContent] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isBooking, setIsBooking] = useState(false);
+    const [settings, setSettings] = useState({ resetDay1: 1, resetDay2: 4 });
+    const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -50,11 +52,40 @@ export default function Home() {
             if (dataB.error || dataM.error || dataS.error || dataT.error) {
                 console.error("API Error detected:", dataB.error || dataM.error || dataS.error || dataT.error);
             }
+
+            const resSettings = await fetch('/api/settings');
+            const dataSet = await resSettings.json();
+            if (dataSet && !dataSet.error) setSettings(dataSet);
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
         }
+    };
+
+    const updateSettings = async (newSettings: any) => {
+        setIsUpdatingSettings(true);
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSettings)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSettings(data);
+                fetchData();
+            }
+        } catch (e) {
+            alert('Fehler beim Speichern der Einstellungen');
+        } finally {
+            setIsUpdatingSettings(false);
+        }
+    };
+
+    const getDayName = (day: number) => {
+        const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+        return days[day];
     };
 
     const filteredItems = useMemo(() => {
@@ -465,9 +496,9 @@ export default function Home() {
                                             <p className="text-amber-800 text-xs mt-1 leading-relaxed">
                                                 Die Kurs-Einschreibungen werden automatisch archiviert und die Plätze freigegeben:
                                                 <br />
-                                                • Immer am <strong>Montag um 00:00 Uhr</strong>
+                                                • Immer am <strong>{getDayName(settings.resetDay1)} um 00:00 Uhr</strong>
                                                 <br />
-                                                • Immer am <strong>Donnerstag um 00:00 Uhr</strong>
+                                                • Immer am <strong>{getDayName(settings.resetDay2)} um 00:00 Uhr</strong>
                                             </p>
                                         </div>
                                     </div>
@@ -578,6 +609,41 @@ export default function Home() {
                                                 );
                                             })}
                                         </div>
+                                    </div>
+
+                                    <div className="p-4 bg-slate-50 border-t border-slate-100">
+                                        <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider flex items-center gap-2">
+                                            <Clock className="w-4 h-4" /> Reset-Tage festlegen
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Tag 1</label>
+                                                <select
+                                                    value={settings.resetDay1}
+                                                    disabled={isUpdatingSettings}
+                                                    onChange={(e) => updateSettings({ ...settings, resetDay1: parseInt(e.target.value) })}
+                                                    className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
+                                                >
+                                                    {[1, 2, 3, 4, 5, 6, 0].map(d => (
+                                                        <option key={d} value={d}>{getDayName(d)}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Tag 2</label>
+                                                <select
+                                                    value={settings.resetDay2}
+                                                    disabled={isUpdatingSettings}
+                                                    onChange={(e) => updateSettings({ ...settings, resetDay2: parseInt(e.target.value) })}
+                                                    className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
+                                                >
+                                                    {[1, 2, 3, 4, 5, 6, 0].map(d => (
+                                                        <option key={d} value={d}>{getDayName(d)}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {isUpdatingSettings && <p className="text-[10px] text-pink-600 font-bold mt-2 animate-pulse">Speichere Änderungen...</p>}
                                     </div>
                                 </div>
                             </div>
