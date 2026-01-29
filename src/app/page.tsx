@@ -20,6 +20,8 @@ export default function Home() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [messages, setMessages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [editingContent, setEditingContent] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -80,6 +82,32 @@ export default function Home() {
             fetchData();
         } catch (e) {
             alert('Fehler beim Senden der Nachricht');
+        }
+    };
+
+    const deleteMessage = async (id: string) => {
+        if (!confirm('Nachricht wirklich löschen?')) return;
+        try {
+            const res = await fetch(`/api/messages/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchData();
+        } catch (e) {
+            alert('Fehler beim Löschen');
+        }
+    };
+
+    const updateMessage = async (id: string) => {
+        try {
+            const res = await fetch(`/api/messages/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: editingContent })
+            });
+            if (res.ok) {
+                setEditingMessageId(null);
+                fetchData();
+            }
+        } catch (e) {
+            alert('Fehler beim Aktualisieren');
         }
     };
 
@@ -382,54 +410,106 @@ export default function Home() {
                             </div>
 
                             <div className="white-card">
-                                <div className="bg-slate-50 p-4 border-b border-slate-100 font-bold text-slate-800">
-                                    Kurs-Teilnehmerlisten
+                                <div className="bg-slate-50 p-4 border-b border-slate-100 font-bold text-slate-800 flex justify-between items-center">
+                                    <span>Verwaltung & Berichte</span>
                                 </div>
-                                <div className="divide-y divide-slate-100">
-                                    {['Mathe', 'Deutsch', 'Englisch'].map(room => {
-                                        const roomBookings = bookings.filter((b: any) => b.room === room);
-                                        return (
-                                            <details key={room} className="group overflow-hidden">
-                                                <summary className="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-slate-50 transition-colors">
-                                                    <div className="flex items-center gap-4">
-                                                        <span className="text-xl font-bold text-slate-800">{room}</span>
-                                                        <span className="text-xs bg-slate-200 px-2 py-1 rounded-full text-slate-600 font-bold">
-                                                            {roomBookings.length} / 25
-                                                        </span>
+                                <div className="p-0">
+                                    <div className="border-b border-slate-100 p-4 bg-slate-50/50">
+                                        <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider">Aktuelle Mitteilungen</h4>
+                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                                            {messages.length === 0 ? (
+                                                <p className="text-slate-400 italic text-sm text-center py-4">Noch keine Nachrichten veröffentlicht.</p>
+                                            ) : (
+                                                messages.map((m) => (
+                                                    <div key={m._id} className="p-4 rounded-xl bg-white border border-slate-100 shadow-sm">
+                                                        {editingMessageId === m._id ? (
+                                                            <div className="space-y-2">
+                                                                <textarea
+                                                                    value={editingContent}
+                                                                    onChange={(e) => setEditingContent(e.target.value)}
+                                                                    className="w-full text-sm border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-pink-500 outline-none"
+                                                                    rows={3}
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button onClick={() => updateMessage(m._id)} className="px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600">Speichern</button>
+                                                                    <button onClick={() => setEditingMessageId(null)} className="px-3 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-lg hover:bg-slate-200">Abbrechen</button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <span className="font-bold text-slate-700 text-sm">{m.sender}</span>
+                                                                    <div className="flex gap-1">
+                                                                        <button
+                                                                            onClick={() => { setEditingMessageId(m._id); setEditingContent(m.content); }}
+                                                                            className="p-1.5 text-slate-400 hover:text-blue-500 transition-colors"
+                                                                            title="Bearbeiten"
+                                                                        >
+                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => deleteMessage(m._id)}
+                                                                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                                                                            title="Löschen"
+                                                                        >
+                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <p className="text-slate-600 text-sm italic">"{m.content}"</p>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    <ChevronRight className="w-5 h-5 group-open:rotate-90 text-slate-400 transition-transform" />
-                                                </summary>
-                                                <div className="px-6 pb-6 pt-2">
-                                                    {roomBookings.length === 0 ? (
-                                                        <p className="text-slate-400 italic text-sm py-2">Noch keine Einschreibungen.</p>
-                                                    ) : (
-                                                        <div className="bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
-                                                            <table className="w-full text-left text-sm">
-                                                                <thead className="bg-slate-100 text-slate-500 uppercase text-[10px] font-bold">
-                                                                    <tr>
-                                                                        <th className="px-4 py-3">Schüler</th>
-                                                                        <th className="px-4 py-3">Klasse</th>
-                                                                        <th className="px-4 py-3 text-right">Eingetragen am</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody className="divide-y divide-slate-100">
-                                                                    {roomBookings.map((b, i) => (
-                                                                        <tr key={i} className="hover:bg-white/50 transition-colors">
-                                                                            <td className="px-4 py-3 font-medium text-slate-700">{b.student?.name}</td>
-                                                                            <td className="px-4 py-3 text-slate-500">{b.student?.className}</td>
-                                                                            <td className="px-4 py-3 text-right text-slate-400 text-xs">
-                                                                                {new Date(b.createdAt).toLocaleDateString()}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
+                                                )
+                                                ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4">
+                                        <h4 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider">Kurs-Listen</h4>
+                                        <div className="divide-y divide-slate-100">
+                                            {['Mathe', 'Deutsch', 'Englisch'].map(room => {
+                                                const roomBookings = bookings.filter((b: any) => b.room === room);
+                                                return (
+                                                    <details key={room} className="group overflow-hidden">
+                                                        <summary className="p-4 cursor-pointer list-none flex justify-between items-center hover:bg-slate-50 transition-colors rounded-lg">
+                                                            <div className="flex items-center gap-4">
+                                                                <span className="font-bold text-slate-800">{room}</span>
+                                                                <span className="text-[10px] bg-slate-200 px-2 py-0.5 rounded-full text-slate-600 font-bold">
+                                                                    {roomBookings.length}/25
+                                                                </span>
+                                                            </div>
+                                                            <ChevronRight className="w-4 h-4 group-open:rotate-90 text-slate-400 transition-transform" />
+                                                        </summary>
+                                                        <div className="p-4 pt-2">
+                                                            {roomBookings.length === 0 ? (
+                                                                <p className="text-slate-400 italic text-xs py-2 text-center">Noch keine Einschreibungen.</p>
+                                                            ) : (
+                                                                <div className="bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
+                                                                    <table className="w-full text-left text-[11px]">
+                                                                        <thead className="bg-slate-100 text-slate-500 uppercase font-bold">
+                                                                            <tr>
+                                                                                <th className="px-3 py-2">Name</th>
+                                                                                <th className="px-3 py-2">Klasse</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-slate-100">
+                                                                            {roomBookings.map((b, i) => (
+                                                                                <tr key={i} className="hover:bg-white/50 transition-colors">
+                                                                                    <td className="px-3 py-2 font-medium text-slate-700">{b.student?.name}</td>
+                                                                                    <td className="px-3 py-2 text-slate-500">{b.student?.className}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </details>
-                                        );
-                                    })}
+                                                    </details>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
