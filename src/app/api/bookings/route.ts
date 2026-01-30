@@ -34,6 +34,18 @@ export async function POST(req: Request) {
             { upsert: true, new: true }
         );
 
+        // DOUBLE CHECK: Race Condition Protection
+        // After inserting, we check the total count for this room/session again.
+        const verifyCount = await Booking.countDocuments({ room, session });
+        if (verifyCount > 25) {
+            // If we exceeded the limit, we must rollback THIS booking if it was the one that tipped the scale.
+            // Actually, simply acting as "Last In First Out" rejection is fair for race conditions.
+            // Check if this booking is among the text few that overflowed? 
+            // Simpler: Just delete it and throw error.
+            await Booking.findByIdAndDelete(booking._id);
+            return NextResponse.json({ error: 'Dieser Raum ist bereits voll (max. 25 Schüler) - Buchung storniert.' }, { status: 400 });
+        }
+
         return NextResponse.json(booking);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

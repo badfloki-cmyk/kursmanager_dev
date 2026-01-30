@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 // Force sync trigger 2026-01-29
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Search, MessageSquare, ChevronRight, GraduationCap, X, Check, Eye, EyeOff, Clock } from 'lucide-react';
@@ -26,6 +26,7 @@ export default function Home() {
     const [isBooking, setIsBooking] = useState(false);
     const [settings, setSettings] = useState({ resetDay1: 1, resetDay2: 4, resetTime: "00:00" });
     const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
+    const bookingLock = useRef(false);
 
     useEffect(() => {
         fetchData();
@@ -34,10 +35,10 @@ export default function Home() {
     const fetchData = async () => {
         try {
             const [resS, resT, resB, resM] = await Promise.all([
-                fetch('/api/students'),
-                fetch('/api/teachers'),
-                fetch('/api/bookings'),
-                fetch('/api/messages')
+                fetch('/api/students', { headers: { 'Cache-Control': 'no-cache' } }),
+                fetch('/api/teachers', { headers: { 'Cache-Control': 'no-cache' } }),
+                fetch('/api/bookings', { headers: { 'Cache-Control': 'no-cache' } }),
+                fetch('/api/messages', { headers: { 'Cache-Control': 'no-cache' } })
             ]);
 
             const [dataS, dataT, dataB, dataM] = await Promise.all([
@@ -69,19 +70,22 @@ export default function Home() {
         }
     };
 
-    const updateSettings = async (newSettings: any) => {
-        setSettings(newSettings); // Optimistic update
+    const updateSettingsLocal = (key: string, value: any) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
+    };
+
+    const saveSettings = async () => {
         setIsUpdatingSettings(true);
         try {
             const res = await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newSettings)
+                body: JSON.stringify(settings)
             });
             if (res.ok) {
                 const data = await res.json();
                 setSettings(data);
-                // fetchData(); // Removed to avoid jumpy UI
+                alert("Einstellungen erfolgreich gespeichert.");
             }
         } catch (e) {
             alert('Fehler beim Speichern der Einstellungen');
@@ -105,8 +109,9 @@ export default function Home() {
     }, [searchTerm, loginRole, students, teachers]);
 
     const handleBooking = async (room: string) => {
-        if (isBooking) return;
+        if (isBooking || bookingLock.current) return;
         setIsBooking(true);
+        bookingLock.current = true;
         try {
             const res = await fetch('/api/bookings', {
                 method: 'POST',
@@ -125,6 +130,7 @@ export default function Home() {
             alert('Fehler beim Buchen');
         } finally {
             setIsBooking(false);
+            bookingLock.current = false;
         }
     };
 
@@ -630,8 +636,7 @@ export default function Home() {
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase">Tag 1</label>
                                                 <select
                                                     value={settings.resetDay1}
-                                                    disabled={isUpdatingSettings}
-                                                    onChange={(e) => updateSettings({ ...settings, resetDay1: parseInt(e.target.value) })}
+                                                    onChange={(e) => updateSettingsLocal('resetDay1', parseInt(e.target.value))}
                                                     className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
                                                 >
                                                     {[1, 2, 3, 4, 5, 6, 0].map(d => (
@@ -643,8 +648,7 @@ export default function Home() {
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase">Tag 2</label>
                                                 <select
                                                     value={settings.resetDay2}
-                                                    disabled={isUpdatingSettings}
-                                                    onChange={(e) => updateSettings({ ...settings, resetDay2: parseInt(e.target.value) })}
+                                                    onChange={(e) => updateSettingsLocal('resetDay2', parseInt(e.target.value))}
                                                     className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
                                                 >
                                                     {[1, 2, 3, 4, 5, 6, 0].map(d => (
@@ -657,20 +661,28 @@ export default function Home() {
                                                 <input
                                                     type="time"
                                                     value={settings.resetTime}
-                                                    disabled={isUpdatingSettings}
-                                                    onChange={(e) => updateSettings({ ...settings, resetTime: e.target.value })}
+                                                    onChange={(e) => updateSettingsLocal('resetTime', e.target.value)}
                                                     className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-pink-500 outline-none disabled:opacity-50"
                                                 />
                                             </div>
                                         </div>
-                                        {isUpdatingSettings && <p className="text-[10px] text-pink-600 font-bold mt-2 animate-pulse">Speichere Änderungen...</p>}
+                                        <div className="mt-4 flex justify-end">
+                                            <button
+                                                onClick={saveSettings}
+                                                disabled={isUpdatingSettings}
+                                                className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
+                                            >
+                                                {isUpdatingSettings ? 'Speichere...' : 'Einstellungen speichern'}
+                                            </button>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
-                        </div>
+
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }
