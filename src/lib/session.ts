@@ -6,7 +6,8 @@ export const getCurrentSession = async () => {
     let settings = await Settings.findOne();
     if (!settings) settings = { resetDay1: 1, resetDay2: 4, resetTime: "00:00" };
 
-    const now = new Date();
+    // Get current time in Berlin
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
     const currentDay = now.getDay(); // 0-6 (Sun-Sat)
 
     // Parse reset time
@@ -32,6 +33,7 @@ export const getCurrentSession = async () => {
     const isSession1 = currentMinutesOfWeek >= r1 && currentMinutesOfWeek < r2;
 
     // Week number calculation (ISO-ish)
+    // using the Berlin 'now' ensures week number changes at Berlin midnight
     const weekNumber = Math.ceil((now.getDate() + 6 - now.getDay()) / 7);
 
     return `2025-W${weekNumber}-${isSession1 ? '1' : '2'}`;
