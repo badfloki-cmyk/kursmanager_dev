@@ -70,6 +70,7 @@ export default function Home() {
     };
 
     const updateSettings = async (newSettings: any) => {
+        setSettings(newSettings); // Optimistic update
         setIsUpdatingSettings(true);
         try {
             const res = await fetch('/api/settings', {
@@ -80,10 +81,11 @@ export default function Home() {
             if (res.ok) {
                 const data = await res.json();
                 setSettings(data);
-                fetchData();
+                // fetchData(); // Removed to avoid jumpy UI
             }
         } catch (e) {
             alert('Fehler beim Speichern der Einstellungen');
+            fetchData(); // Revert on error
         } finally {
             setIsUpdatingSettings(false);
         }
@@ -111,11 +113,13 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ studentId: user._id, room })
             });
+            const d = await res.json();
             if (res.ok) {
+                // Optimistic update for student UI
+                setBookings(prev => [...prev, d]);
                 await fetchData();
             } else {
-                const d = await res.json();
-                alert(d.error);
+                alert(d.error || 'Fehler beim Buchen');
             }
         } catch (e) {
             alert('Fehler beim Buchen');
