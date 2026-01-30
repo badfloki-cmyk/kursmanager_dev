@@ -1,27 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
-// Helper function to validate time format.
+// Helper function to validate time format
 const isValidTimeFormat = (time) => {
-    const regex = /^\d{2}:\d{2}$/;
-    return regex.test(time);
+    const timePattern = /^(\d{2}):(\d{2}):(\d{2})$/;
+    return timePattern.test(time);
 };
 
-const saveSettings = (settings) => {
-    try {
-        // Implement your saving logic here.
-    } catch (error) {
-        console.error('Failed to save settings:', error);
-        // Improved error handling: Show a user-friendly message
-        alert('An error occurred while saving settings. Please try again.');
-    }
-};
+const Page = () => {
+    const [resetTime, setResetTime] = useState('00:00:00');
 
-const TeacherDashboard = () => {
+    const handleResetTimeChange = (e) => {
+        const newTime = e.target.value;
+        if (isValidTimeFormat(newTime)) {
+            setResetTime(newTime);
+        } else {
+            console.error('Invalid time format. Please use HH:MM:SS.');
+        }
+    };
+
     return (
         <motion.div>
-            {/* Your existing components and logic go here */}
+            <h1>Welcome to Kursmanager</h1>
+            <input 
+                type='text' 
+                value={resetTime} 
+                onChange={handleResetTimeChange} 
+                placeholder='HH:MM:SS' 
+            />
         </motion.div>
     );
 };
 
-export default TeacherDashboard;
+export default Page;
